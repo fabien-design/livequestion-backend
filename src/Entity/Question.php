@@ -9,9 +9,13 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
+#[Vich\Uploadable]
 class Question
 {
     use TimestampableEntity;
@@ -34,12 +38,14 @@ class Question
     #[ORM\OneToOne(mappedBy: 'question', cascade: ['persist', 'remove'])]
     #[Groups(["question:read"])]
     private ?Images $images = null;
-    
-    #[ORM\ManyToOne(targetEntity: Category::class,inversedBy:'questions')]
+
+    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'questions')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(["question:read"])]
-    
     private ?Category $category;
+
+    #[Vich\UploadableField(mapping: 'question_image', fileNameProperty: 'images.name', originalName: 'images.original_name', size: 'images.size', mimeType: 'images.extension')]
+    private ?File $imageFile = null;
 
     /**
      * @var Collection<int, Answer>
@@ -55,6 +61,8 @@ class Question
     public function __construct()
     {
         $this->answers = new ArrayCollection();
+        $this->images = new Images();
+        $this->images->setQuestion($this);
     }
 
     public function __toString()
@@ -75,6 +83,18 @@ class Question
     public function setTitle(string $title): static
     {
         $this->title = $title;
+
+        return $this;
+    }
+
+    public function getImageFile(): ?File
+    {
+        return $this->imageFile;
+    }
+
+    public function setImageFile(?File $imageFile): static
+    {
+        $this->imageFile = $imageFile;
 
         return $this;
     }
