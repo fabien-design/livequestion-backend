@@ -16,16 +16,16 @@ class Answer
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["question:read"])]
+    #[Groups(["question.show"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 512)]
-    #[Groups(["question:read"])]
+    #[Groups(["question.show"])]
     private ?string $content = null;
 
     #[ORM\ManyToOne(inversedBy: 'answer')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["question:read"])]
+    #[Groups(["question.show"])]
     private ?User $author = null;
 
     #[ORM\ManyToOne(inversedBy: 'answer')]

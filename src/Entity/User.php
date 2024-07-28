@@ -18,18 +18,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["question:read"])]
+    #[Groups(["question.index", "question.show"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(["question:read"])]
+    #[Groups(["question.index", "question.show"])]
     private ?string $username = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(["question:read"])]
     private array $roles = [];
 
     /**
@@ -39,8 +38,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["question:read"])]
+    #[Groups(["question.show"])]
     private ?string $email = null;
+
+    #[ORM\Column(length: 1024, nullable: true)]
+    #[Groups(["question.index", "question.show"])]
+    private ?string $avatar = null;
 
     /**
      * @var Collection<int, Question>
@@ -53,6 +56,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Answer::class, mappedBy: 'author', orphanRemoval: true)]
     private Collection $answers;
+
 
     public function __construct()
     {
@@ -203,6 +207,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $answer->setAuthor(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?string $avatar): static
+    {
+        $this->avatar = $avatar;
 
         return $this;
     }

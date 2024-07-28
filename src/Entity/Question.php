@@ -4,45 +4,55 @@ namespace App\Entity;
 
 use App\Repository\QuestionRepository;
 use DateTime;
+use DateTimeImmutable;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
-use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
-use Symfony\Component\Uid\Uuid;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
 #[Vich\Uploadable]
 class Question
 {
-    use TimestampableEntity;
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["question:read"])]
+    #[Groups(["question.index", "question.show"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["question:read"])]
+    #[Groups(["question.index", "question.show"])]
     private ?string $title = null;
 
     #[ORM\ManyToOne(inversedBy: 'question')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["question:read"])]
+    #[Groups(["question.index", "question.show"])]
     private ?User $author = null;
 
-    #[ORM\OneToOne(mappedBy: 'question', cascade: ['persist', 'remove'])]
-    #[Groups(["question:read"])]
+    #[ORM\OneToOne(inversedBy: 'question', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(["question.index", "question.show"])]
     private ?Images $images = null;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'questions')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["question:read"])]
+    #[Groups(["question.index", "question.show"])]
     private ?Category $category;
+
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    #[Groups(["question.index" ,"question.show"])]
+    private ?DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    #[Groups(["question.show"])]
+    private ?DateTimeInterface $updatedAt = null;
 
     #[Vich\UploadableField(mapping: 'question_image', fileNameProperty: 'images.name', originalName: 'images.original_name', size: 'images.size', mimeType: 'images.extension')]
     private ?File $imageFile = null;
@@ -51,18 +61,13 @@ class Question
      * @var Collection<int, Answer>
      */
     #[ORM\OneToMany(targetEntity: Answer::class, mappedBy: 'question', orphanRemoval: true)]
-    #[Groups(["question:read"])]
+    #[Groups(["question.show"])]
     private Collection $answers;
-
-    // #[ORM\Column(nullable: true)]
-    // #[Gedmo\Timestampable(on:'create')]
-    // private ?\DateTimeImmutable $created_at = null;
 
     public function __construct()
     {
         $this->answers = new ArrayCollection();
-        $this->images = new Images();
-        $this->images->setQuestion($this);
+        $this->images = $this->getImages();
     }
 
     public function __toString()
@@ -92,12 +97,16 @@ class Question
         return $this->imageFile;
     }
 
-    public function setImageFile(?File $imageFile): static
+    public function setImageFile(?File $imageFile = null): void
     {
         $this->imageFile = $imageFile;
-
-        return $this;
+        if ($imageFile) {
+            $this->images = $this->getImages();
+            $this->images->setImageFile($imageFile);
+            $this->images->setUpdatedAt(new DateTimeImmutable());
+        }
     }
+
 
     public function getAuthor(): ?User
     {
@@ -113,6 +122,11 @@ class Question
 
     public function getImages(): ?Images
     {
+        if ($this->images === null) {
+            $this->images = new Images();
+            $this->images->setQuestion($this);
+        }
+
         return $this->images;
     }
 
@@ -169,4 +183,30 @@ class Question
 
         return $this;
     }
+
+    public function getCreatedAt(): ?DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+  
 }

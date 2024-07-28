@@ -5,16 +5,124 @@ namespace App\Repository;
 use App\Entity\Question;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Knp\Bundle\PaginatorBundle\Pagination\SlidingPagination;
+use Knp\Component\Pager\Pagination\PaginationInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 /**
  * @extends ServiceEntityRepository<Question>
  */
 class QuestionRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private PaginatorInterface $paginator)
     {
         parent::__construct($registry, Question::class);
     }
+
+    public function PaginateQuestions(int $page, int $limit, string $orderBy = "DESC", string $sortBy = null): PaginationInterface
+    {
+        $qb = $this->createQueryBuilder('q')
+            ->leftJoin('q.category', 'c')
+            ->addSelect('c')
+            ->leftJoin('q.images', 'i')
+            ->addSelect('i')
+            ->leftJoin('q.answers', 'a')
+            ->addSelect('COUNT(a.id) AS HIDDEN answersCount')
+            ->groupBy('q.id')
+            ->orderBy($sortBy ? 'q.'.$sortBy : 'q.createdAt', $orderBy);
+    
+        $pagination = $this->paginator->paginate(
+            $qb->getQuery(),
+            $page,
+            $limit
+        );
+    
+        // Transform the results to include answersCount correctly
+        $questions = [];
+        foreach ($pagination as $question) {
+            $questions[] = [
+                'id' => $question->getId(),
+                'title' => $question->getTitle(),
+                'author' => [
+                    'id' => $question->getAuthor()->getId(),
+                    'username' => $question->getAuthor()->getUsername(),
+                    'avatar' => $question->getAuthor()->getAvatar(),
+                ],
+                'images' => [
+                    'id' => $question->getImages()->getId(),
+                    'name' => $question->getImages()->getName(),
+                ],
+                'category' => [
+                    'id' => $question->getCategory()->getId(),
+                    'name' => $question->getCategory()->getName(),
+                ],
+                'createdAt' => $question->getCreatedAt(),
+                'answersCount' => $question->getAnswers()->count(),
+            ];
+        }
+
+        $pagination->setItems($questions);
+    
+        return $pagination;
+    }
+
+    public function findQuestionWithMostAnswersLastThreeDays(): ?array
+    {
+        $threeDaysAgo = new \DateTime('-3 days');
+
+        $qb = $this->createQueryBuilder('q')
+            ->leftJoin('q.category', 'c')
+            ->addSelect('c')
+            ->leftJoin('q.images', 'i')
+            ->addSelect('i')
+            ->leftJoin('q.answers', 'a')
+            ->addSelect('COUNT(a.id) AS answersCount')
+            ->where('q.createdAt >= :threeDaysAgo')
+            ->setParameter('threeDaysAgo', $threeDaysAgo)
+            ->groupBy('q.id')
+            ->orderBy('answersCount', 'DESC')
+            ->setMaxResults(1);
+
+        $result =  $qb->getQuery()->getOneOrNullResult();
+
+        if (!$result) {
+            $qb = $this->createQueryBuilder('q')
+                ->leftJoin('q.category', 'c')
+                ->addSelect('c')
+                ->leftJoin('q.images', 'i')
+                ->addSelect('i')
+                ->leftJoin('q.answers', 'a')
+                ->addSelect('COUNT(a.id) AS answersCount')
+                ->groupBy('q.id')
+                ->orderBy('answersCount', 'DESC')
+                ->setMaxResults(1);
+            $result = $qb->getQuery()->getOneOrNullResult();
+        }
+        $question = $result[0];
+        $question = [
+            'id' => $question->getId(),
+            'title' => $question->getTitle(),
+            'author' => [
+                'id' => $question->getAuthor()->getId(),
+                'username' => $question->getAuthor()->getUsername(),
+                'avatar' => $question->getAuthor()->getAvatar(),
+            ],
+            'images' => [
+                'id' => $question->getImages()->getId(),
+                'name' => $question->getImages()->getName(),
+            ],
+            'category' => [
+                'id' => $question->getCategory()->getId(),
+                'name' => $question->getCategory()->getName(),
+            ],
+            'createdAt' => $question->getCreatedAt(),
+            'answersCount' => $question->getAnswers()->count(),
+        ];
+
+        return $question;
+    }
+
+    
 
     //    /**
     //     * @return Question[] Returns an array of Question objects

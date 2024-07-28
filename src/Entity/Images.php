@@ -10,6 +10,8 @@ use Symfony\Component\Validator\Constraints\Image;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 use Vich\UploaderBundle\Naming\NamerInterface;
 use Vich\UploaderBundle\Mapping\PropertyMapping;
+use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ImagesRepository::class)]
 #[Vich\Uploadable]
@@ -18,25 +20,34 @@ class Images
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["question.index", "question.show"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["question.index", "question.show"])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["question.show"])]
     private ?string $original_name = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["question.show"])]
     private ?string $extension = null;
 
     #[ORM\Column]
+    #[Groups(["question.show"])]
     private ?int $size = null;
+
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    #[Groups(["question.show"])]
+    private ?\DateTimeInterface $updated_at = null;
 
     #[Vich\UploadableField(mapping: 'question_image', fileNameProperty: 'name', originalName: 'original_name', size: 'size', mimeType:'extension')]
     private ?File $imageFile = null;
 
-    #[ORM\OneToOne(inversedBy: 'images', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\OneToOne(mappedBy: 'images', cascade: ['persist', 'remove'])]
     private ?Question $question = null;
 
     public function getId(): ?int
@@ -47,12 +58,12 @@ class Images
     public function setImageFile(?File $imageFile = null): void
     {
         $this->imageFile = $imageFile;
-        // if (null !== $imageFile) {
-        //     // It is required that at least one field changes if you are using doctrine
-        //     // otherwise the event listeners won't be called and the file is lost
-        //     $this->updated_at = new \DateTimeImmutable();
+        if (null !== $imageFile) {
+            // It is required that at least one field changes if you are using doctrine
+            // otherwise the event listeners won't be called and the file is lost
+            $this->updated_at = new \DateTimeImmutable();
             
-        // }
+        }
     }
 
     public function getImageFile(): ?File
@@ -68,7 +79,6 @@ class Images
     public function setName(string $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
@@ -116,6 +126,18 @@ class Images
     public function setQuestion(Question $question): static
     {
         $this->question = $question;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updated_at): static
+    {
+        $this->updated_at = $updated_at;
 
         return $this;
     }
