@@ -74,7 +74,7 @@ class QuestionController extends AbstractController
     }
 
     #[Route(
-    path: '/questions/{id}', 
+    path: '/{id}', 
     name: 'app_api_question_show', 
     methods: ['GET'], 
     format: 'json',
