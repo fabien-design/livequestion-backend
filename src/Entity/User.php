@@ -13,22 +13,23 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USERNAME', fields: ['username'])]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements PasswordAuthenticatedUserInterface, UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["question.index", "question.show"])]
+    #[Groups(["question.index", "question.show", "user.show"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(["question.index", "question.show"])]
+    #[Groups(["question.index", "question.show", "user.show"])]
     private ?string $username = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(["question.index", "question.show", "user.show"])]
     private array $roles = [];
 
     /**
@@ -38,11 +39,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["question.show"])]
+    #[Groups(["question.show", "user.show"])]
     private ?string $email = null;
 
     #[ORM\Column(length: 1024, nullable: true)]
-    #[Groups(["question.index", "question.show"])]
+    #[Groups(["question.index", "question.show", "user.show"])]
     private ?string $avatar = null;
 
     /**

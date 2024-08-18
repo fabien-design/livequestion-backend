@@ -10,6 +10,7 @@
         "easycorp/easyadmin-bundle": "^4.10",
         "gedmo/doctrine-extensions": "^3.16",
         "knplabs/knp-paginator-bundle": "^6.4",
+        "lexik/jwt-authentication-bundle": "*",
         "nelmio/cors-bundle": "^2.5",
         "stof/doctrine-extensions-bundle": "^1.12",
         "symfony/console": "7.1.*",
