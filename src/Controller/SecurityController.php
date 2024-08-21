@@ -39,20 +39,17 @@ class SecurityController extends AbstractController
     }
 
     #[Route(path: '/api/login', name: 'app_api_login_json', methods: ['POST'])]
-    public function apiLoginJson(SerializerInterface $serializerInterface): JsonResponse
+    public function apiLoginJson(): JsonResponse
     {
         $user = $this->getUser();
         if (!$user) {
             return new JsonResponse(['error' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Générer le token JWT 
+        // Générer le token JWT
         $token = $this->jwtManager->create($user);
-        $user = $serializerInterface->serialize($user, 'json', ['groups' => 'user.show']);
-        return new JsonResponse([
-            'user' => $user,
-            'token' => $token,
-        ], Response::HTTP_OK);
+
+        return new JsonResponse(['token' => $token], Response::HTTP_OK);
     }
 
 
