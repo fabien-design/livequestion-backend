@@ -2,11 +2,15 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Images;
 use App\Entity\Question;
 use App\Form\QuestionType;
+use App\Repository\CategoryRepository;
 use App\Repository\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
@@ -14,6 +18,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Constraints\Image;
+use Vich\UploaderBundle\Form\Type\VichImageType;
 
 #[Route('/api/questions')]
 class QuestionController extends AbstractController
@@ -26,9 +32,12 @@ class QuestionController extends AbstractController
     #[Route('/', name: 'app_api_question_index', methods: ['GET'], format: 'json')]
     public function index(
         QuestionRepository $questionRepository,
-        #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(asc|desc)$/'])] string $orderBy = 'DESC',
-        #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(date|answers)$/'])] string $orderByField = 'date',
-        #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^\d+$/'])] int $limit = 10,
+        #[MapQueryParameter('page', filter: \FILTER_VALIDATE_INT)] int $page = 1,
+        #[MapQueryParameter('limit', filter: \FILTER_VALIDATE_INT)] int $limit = 10,
+        #[MapQueryParameter('orderBy', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(asc|desc)$/i'])] string $orderBy = 'DESC',
+        #[MapQueryParameter('w', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(date|answers)$/'])] string $orderByField = 'date',
+        #[MapQueryParameter('categoryId', filter: \FILTER_VALIDATE_INT)] ?int $categoryId = null,
+        #[MapQueryParameter('authorId', filter: \FILTER_VALIDATE_INT)] ?int $authorId = null,
     ): Response {
         $orderByFieldMapping = [
             'date' => 'createdAt',
@@ -37,12 +46,20 @@ class QuestionController extends AbstractController
 
         $orderByField = $orderByFieldMapping[$orderByField] ?? 'createdAt';
 
-        $questions = $questionRepository->PaginateQuestions(page: 1, limit: $limit, orderBy: strtoupper($orderBy), sortBy: $orderByField);
+        $questions = $questionRepository->PaginateQuestions(
+            page: $page,
+            limit: $limit,
+            orderBy: strtoupper($orderBy),
+            sortBy: $orderByField,
+            categoryId: $categoryId,
+            authorId: $authorId,
+        );
 
         $jsonQuestions = $this->serializer->serialize($questions, 'json', ['groups' => 'question.index']);
 
         return new Response($jsonQuestions, Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
+
 
     #[Route('/most-answers-last-three-days', name: 'app_api_question_most_answers_last_three_days', methods: ['GET'], format: 'json')]
     public function getQuestionWithMostAnswersLastThreeDays(
@@ -54,23 +71,50 @@ class QuestionController extends AbstractController
     }
 
     #[Route('/new', name: 'app_api_question_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, CategoryRepository $categoryRepository): Response
     {
-        $question = new Question();
-        $form = $this->createForm(QuestionType::class, $question);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($question);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_api_question_index', [], Response::HTTP_SEE_OTHER);
+        $token = $request->headers->get('Authorization');
+        if (!$token) {
+            throw new AccessDeniedException('Bearer token is missing');
         }
 
-        return $this->render('api/question/new.html.twig', [
-            'question' => $question,
-            'form' => $form,
-        ]);
+        $user = $this->getUser();
+        $content = $request->request->get('content');
+        $categoryId = intval($request->request->get('categoryId'));
+        $category = $categoryRepository->find($categoryId);
+        // dd($content, $category, $user);
+        $question = new Question();
+        $question->setAuthor($user);
+        if($request->files->get('file')){
+            $file = $request->files->get('file');
+            $imageFile = new File($file);
+            $fileName = md5(uniqid()). '.'. $imageFile->guessExtension();
+            $image = new Images();
+            $image->setName($fileName)
+                ->setOriginalName($imageFile->getFilename())
+                ->setExtension($imageFile->guessExtension())
+                ->setSize($imageFile->getSize());
+            $destination = $this->getParameter('kernel.project_dir').'/public/images/questions';
+            $imageFile->move($destination, $fileName);
+            $entityManager->persist($image);
+
+            $question->setImages($image);
+        }
+
+        
+        $question->setTitle($content)
+        ->setCategory($category);
+
+        $entityManager->persist($question);
+        try {
+            $entityManager->flush();
+            return new Response('Question created', Response::HTTP_CREATED, ['Content-Type' => 'application/json']);
+        } catch (\Exception $e) {
+            // Handle exception and log error
+            dd($e);
+            return new Response('Error creating question', Response::HTTP_INTERNAL_SERVER_ERROR, ['Content-Type' => 'application/json']);
+        }
+       
     }
 
     #[Route(

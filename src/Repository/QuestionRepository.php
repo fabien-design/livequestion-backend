@@ -19,8 +19,14 @@ class QuestionRepository extends ServiceEntityRepository
         parent::__construct($registry, Question::class);
     }
 
-    public function PaginateQuestions(int $page, int $limit, string $orderBy = "DESC", string $sortBy = null): PaginationInterface
-    {
+    public function PaginateQuestions(
+        int $page,
+        int $limit,
+        string $orderBy = "DESC",
+        string $sortBy = null,
+        ?int $categoryId = null,
+        ?int $authorId = null
+    ): array {
         $qb = $this->createQueryBuilder('q')
             ->leftJoin('q.category', 'c')
             ->addSelect('c')
@@ -29,7 +35,18 @@ class QuestionRepository extends ServiceEntityRepository
             ->leftJoin('q.answers', 'a')
             ->addSelect('COUNT(a.id) AS HIDDEN answersCount')
             ->groupBy('q.id')
-            ->orderBy($sortBy ? 'q.'.$sortBy : 'q.createdAt', $orderBy);
+            ->orderBy($sortBy ? 'q.' . $sortBy : 'q.createdAt', $orderBy);
+    
+        // Application des filtres
+        if ($categoryId) {
+            $qb->andWhere('c.id = :categoryId')
+                ->setParameter('categoryId', $categoryId);
+        }
+    
+        if ($authorId) {
+            $qb->andWhere('q.author = :authorId')
+                ->setParameter('authorId', $authorId);
+        }
     
         $pagination = $this->paginator->paginate(
             $qb->getQuery(),
@@ -37,7 +54,7 @@ class QuestionRepository extends ServiceEntityRepository
             $limit
         );
     
-        // Transform the results to include answersCount correctly
+        // Transformation des résultats pour inclure le `answersCount` correctement
         $questions = [];
         foreach ($pagination as $question) {
             $questions[] = [
@@ -60,10 +77,18 @@ class QuestionRepository extends ServiceEntityRepository
                 'answersCount' => $question->getAnswers()->count(),
             ];
         }
-
+    
         $pagination->setItems($questions);
     
-        return $pagination;
+        return [
+            'items' => $questions,
+            'pagination' => [
+                'currentPage' => $page,
+                'totalItems' => $pagination->getTotalItemCount(),
+                'itemsPerPage' => $limit,
+                'totalPages' => ceil($pagination->getTotalItemCount() / $limit),
+            ],
+        ];
     }
 
     public function findQuestionWithMostAnswersLastThreeDays(): ?array
@@ -122,7 +147,7 @@ class QuestionRepository extends ServiceEntityRepository
         return $question;
     }
 
-    
+
 
     //    /**
     //     * @return Question[] Returns an array of Question objects
