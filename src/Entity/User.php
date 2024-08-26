@@ -18,18 +18,18 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["question.index", "question.show", "user.show"])]
+    #[Groups(["question.index", "question.show", "user.show", "user.index"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(["question.index", "question.show", "user.show"])]
+    #[Groups(["question.index", "question.show", "user.show", "user.index"])]
     private ?string $username = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(["question.index", "question.show", "user.show"])]
+    #[Groups(["question.index", "question.show", "user.show", "user.index"])]
     private array $roles = [];
 
     /**
@@ -43,7 +43,7 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     private ?string $email = null;
 
     #[ORM\Column(length: 1024, nullable: true)]
-    #[Groups(["question.index", "question.show", "user.show"])]
+    #[Groups(["question.index", "question.show", "user.show", "user.index"])]
     private ?string $avatar = null;
 
     /**

@@ -21,20 +21,22 @@ class UserController extends AbstractController
     #[Route('/', name: 'app_api_user_index', methods: ['GET'], format: 'json')]
     public function index(
         UserRepository $userRepository,
-        #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(asc|desc)$/'])] string $orderBy = 'DESC',
-        #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(date|answers)$/'])] string $orderByField = 'date',
-        #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^\d+$/'])] int $limit = 10,
+        // #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(asc|desc)$/'])] string $orderBy = 'DESC',
+        // #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(date|answers)$/'])] string $orderByField = 'date',
+        // #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^\d+$/'])] int $limit = 10,
     ): Response {
         $orderByFieldMapping = [
             'date' => 'createdAt',
             'answers' => 'answersCount',
         ];
 
-        $orderByField = $orderByFieldMapping[$orderByField] ?? 'createdAt';
+        // $orderByField = $orderByFieldMapping[$orderByField] ?? 'createdAt';
 
-        $questions = $userRepository->PaginateQuestions(page: 1, limit: $limit, orderBy: strtoupper($orderBy), sortBy: $orderByField);
+        // $questions = $userRepository->PaginateQuestions(page: 1, limit: $limit, orderBy: strtoupper($orderBy), sortBy: $orderByField);
 
-        $jsonQuestions = $this->serializer->serialize($questions, 'json', ['groups' => 'question.index']);
+        $users = $userRepository->findAll();
+
+        $jsonQuestions = $this->serializer->serialize($users, 'json', ['groups' => 'user.index']);
 
         return new Response($jsonQuestions, Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
