@@ -14,7 +14,7 @@ use Knp\Component\Pager\PaginatorInterface;
  */
 class QuestionRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry, private PaginatorInterface $paginator)
+    public function __construct(ManagerRegistry $registry, private PaginatorInterface $paginator, private UserRepository $userRepository)
     {
         parent::__construct($registry, Question::class);
     }
@@ -25,7 +25,7 @@ class QuestionRepository extends ServiceEntityRepository
         string $orderBy = "DESC",
         string $sortBy = null,
         ?int $categoryId = null,
-        ?int $authorId = null
+        ?string $authorName = null
     ): array {
         $qb = $this->createQueryBuilder('q')
             ->leftJoin('q.category', 'c')
@@ -43,7 +43,9 @@ class QuestionRepository extends ServiceEntityRepository
                 ->setParameter('categoryId', $categoryId);
         }
     
-        if ($authorId) {
+        if ($authorName) {
+            $authorId = $this->userRepository->findOneByUsername($authorName)->getId();
+
             $qb->andWhere('q.author = :authorId')
                 ->setParameter('authorId', $authorId);
         }

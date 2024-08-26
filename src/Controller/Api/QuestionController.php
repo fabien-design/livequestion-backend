@@ -36,8 +36,8 @@ class QuestionController extends AbstractController
         #[MapQueryParameter('limit', filter: \FILTER_VALIDATE_INT)] int $limit = 10,
         #[MapQueryParameter('orderBy', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(asc|desc)$/i'])] string $orderBy = 'DESC',
         #[MapQueryParameter('w', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(date|answers)$/'])] string $orderByField = 'date',
-        #[MapQueryParameter('categoryId', filter: \FILTER_VALIDATE_INT)] ?int $categoryId = null,
-        #[MapQueryParameter('authorId', filter: \FILTER_VALIDATE_INT)] ?int $authorId = null,
+        #[MapQueryParameter('category', filter: \FILTER_VALIDATE_INT)] ?int $categoryId = null,
+        #[MapQueryParameter('author')] ?string $authorName = null
     ): Response {
         $orderByFieldMapping = [
             'date' => 'createdAt',
@@ -52,7 +52,7 @@ class QuestionController extends AbstractController
             orderBy: strtoupper($orderBy),
             sortBy: $orderByField,
             categoryId: $categoryId,
-            authorId: $authorId,
+            authorName: htmlspecialchars(strip_tags($authorName)),
         );
 
         $jsonQuestions = $this->serializer->serialize($questions, 'json', ['groups' => 'question.index']);
