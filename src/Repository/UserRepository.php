@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -15,7 +16,7 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface, UserLoaderInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(ManagerRegistry $registry, private PaginatorInterface $paginator)
     {
         parent::__construct($registry, User::class);
     }
@@ -81,9 +82,53 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
                 'username' => $user->getUsername(),
                 'avatar' => $user->getAvatar(),
                 'questions_count' => $user->getQuestions()->count(),
+                'created_at' => $user->getCreatedAt(),
             ];
         }
 
         return $result;
+    }
+
+    public function PaginateUsers(
+        int $page,
+        int $limit,
+        string $orderBy = "DESC",
+    ): array {
+        $qb = $this->createQueryBuilder('u')
+            ->select('u', 'COUNT(q.id) AS HIDDEN questions_count')
+            ->leftJoin('u.questions', 'q')
+            ->groupBy('u.id')
+            ->orderBy('questions_count', $orderBy);
+    
+    
+        $pagination = $this->paginator->paginate(
+            $qb->getQuery(),
+            $page,
+            $limit
+        );
+    
+        // Transformation des résultats pour inclure le `answersCount` correctement
+        $users = [];
+        foreach ($pagination as $user) {
+            $users[] = [
+                'id' => $user->getId(),
+                'username' => $user->getUsername(),
+                'avatar' => $user->getAvatar(),
+                'questions_count' => $user->getQuestions()->count(),
+                'created_at' => $user->getCreatedAt(),
+            ];
+        }
+    
+        $pagination->setItems($users);
+    
+        return [
+            'items' => $users,
+            'pagination' => [
+                'currentPage' => $page,
+                'totalItems' => $pagination->getTotalItemCount(),
+                'itemsPerPage' => $limit,
+                'totalPages' => ceil($pagination->getTotalItemCount() / $limit),
+            ],
+        ];
     }
 }

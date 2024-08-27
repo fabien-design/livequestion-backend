@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -58,6 +59,17 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     #[ORM\OneToMany(targetEntity: Answer::class, mappedBy: 'author', orphanRemoval: true)]
     #[Groups(["user.show", "user.index"])]
     private Collection $answers;
+
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    #[Groups(["user.index" ,"user.show"])]
+    private ?\DateTimeInterface $createdAt = null;
+
+    #[ORM\Column(type: 'datetime')]
+    #[Gedmo\Timestampable(on: 'update')]
+    #[Groups(["user.show"])]
+    private ?\DateTimeInterface $updatedAt = null;
+
 
 
     public function __construct()
@@ -221,6 +233,30 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function setAvatar(?string $avatar): static
     {
         $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(?\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
