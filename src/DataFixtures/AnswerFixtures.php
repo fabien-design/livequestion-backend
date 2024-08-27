@@ -47,44 +47,49 @@ class AnswerFixtures extends Fixture implements DependentFixtureInterface
             "question" => "4"
         ],
         [
+            "content" => "Deadpool et Wolverine, c'est top!!!!",
+            "author" => "Paax",
+            "question" => "6"
+        ],
+        [
             "content" => "Deadpool et Wolverine dans un même film, c'est juste épique ! L'humour décalé de Deadpool combiné au sérieux de Wolverine crée un duo parfait. J'ai adoré chaque minute.",
             "author" => "Paax",
-            "question" => "5"
+            "question" => "6"
         ],
         [
             "content" => "Je trouve que le film est un bon divertissement, mais parfois l'humour de Deadpool prend un peu trop le dessus, au détriment de l'histoire plus profonde de Wolverine.",
             "author" => "TomSawyer",
-            "question" => "5"
+            "question" => "6"
         ],
         [
             "content" => "Ce film est un rêve devenu réalité pour tous les fans de comics. Les interactions entre Deadpool et Wolverine sont hilarantes, et l'action est au rendez-vous.",
             "author" => "Albator",
-            "question" => "5"
+            "question" => "6"
         ],
         [
             "content" => "C'était cool de voir ces deux personnages ensemble, mais j'aurais aimé que l'histoire soit un peu plus sérieuse. Deadpool apporte beaucoup d'humour, mais Wolverine méritait un peu plus de gravité.",
             "author" => "Jean",
-            "question" => "5"
+            "question" => "6"
         ],
         [
             "content" => "Un pur plaisir pour les fans des deux personnages ! Les scènes d'action sont incroyables, et l'humour est parfaitement dosé. Un must-see pour les amateurs de super-héros.",
             "author" => "PeterPan",
-            "question" => "5"
+            "question" => "6"
         ],
         [
             "content" => "Personnellement, je préfère le foot. C'est un sport universel, accessible à tous, et il y a quelque chose de magique dans l'atmosphère d'un match de foot, que ce soit au stade ou devant la télé.",
             "author" => "Paax",
-            "question" => "6"
+            "question" => "3"
         ],
         [
             "content" => "Le rugby a un esprit d'équipe et des valeurs de respect que je trouve admirables. C'est un sport où l'effort collectif prime, et j'aime la force et la stratégie qu'il demande.",
             "author" => "Albator",
-            "question" => "6"
+            "question" => "3"
         ],
         [
             "content" => "Difficile de choisir entre les deux, mais je dirais que le rugby est plus intense et demande un engagement physique impressionnant. Le foot est plus populaire, mais le rugby a une âme différente.",
             "author" => "PeterPan",
-            "question" => "6"
+            "question" => "3"
         ],
     ];
     
