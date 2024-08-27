@@ -35,7 +35,7 @@ class UserFixtures extends Fixture
             'email' => 'jean@example.com',
             'password' => 'jean',
             'role' => 'ROLE_USER',
-            'avatar' => null
+            'avatar' => "https://img.freepik.com/photos-gratuite/avatar-androgyne-personne-queer-non-binaire_23-2151100270.jpg?size=338&ext=jpg&ga=GA1.1.2008272138.1724630400&semt=ais_hybrid"
         ],
         [
             'username' => 'Albator',
