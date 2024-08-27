@@ -47,6 +47,7 @@ security:
         # - { path: ^/api/profile, roles: ROLE_USER }
         - { path: ^/api/(login|questions/most-answers-last-three-days), roles: PUBLIC_ACCESS }
         - { path: ^/api/categories, roles: PUBLIC_ACCESS }
+        - { path: ^/api/users/bests, roles: PUBLIC_ACCESS }
         - { route: app_api_question_index, roles: PUBLIC_ACCESS }
         - { path: ^/api/questions, roles: IS_AUTHENTICATED_FULLY }  
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

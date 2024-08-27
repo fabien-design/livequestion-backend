@@ -39,11 +39,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $entityManager = $this->getEntityManager();
 
         return $entityManager->createQuery(
-                'SELECT u
+            'SELECT u
                 FROM App\Entity\User u
                 WHERE u.username = :query
                 OR u.email = :query'
-            )
+        )
             ->setParameter('query', $usernameOrEmail)
             ->getOneOrNullResult();
     }
@@ -63,23 +63,27 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     //        ;
     //    }
 
-    public function findBestUsers(int $limit = null): ?array
-       {
-           $qb = $this->createQueryBuilder('u')
-               ->orderBy('u.answers', 'DESC')
-               ->setMaxResults($limit)
-               ->getQuery()
-               ->getResult()
-           ;
-           $users = [];
-           foreach ($qb as $user) {
-                $users[] = [
-                     'id' => $user->getId(),
-                     'username' => $user->getUsername(),
-                     'avatar' => $user->getAvatar(),
-                     'answers' => $user->getAnswers()->count(),
-                ];
-           }
-           return $users;
-       }
+    public function findBestUsers(int $limit = null): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->select('u', 'COUNT(a.id) AS HIDDEN answers_count')
+            ->leftJoin('u.answers', 'a')
+            ->groupBy('u.id')
+            ->orderBy('answers_count', 'DESC')
+            ->setMaxResults($limit);
+
+        $users = $qb->getQuery()->getResult();
+
+        $result = [];
+        foreach ($users as $user) {
+            $result[] = [
+                'id' => $user->getId(),
+                'username' => $user->getUsername(),
+                'avatar' => $user->getAvatar(),
+                'answers' => $user->getAnswers()->count(),
+            ];
+        }
+
+        return $result;
+    }
 }
