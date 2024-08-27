@@ -82,10 +82,9 @@ class QuestionController extends AbstractController
         $content = $request->request->get('content');
         $categoryId = intval($request->request->get('categoryId'));
         $category = $categoryRepository->find($categoryId);
-        // dd($content, $category, $user);
         $question = new Question();
         $question->setAuthor($user);
-        if($request->files->get('file')){
+        if($request->files->get('file') != null){
             $file = $request->files->get('file');
             $imageFile = new File($file);
             $fileName = md5(uniqid()). '.'. $imageFile->guessExtension();
@@ -94,11 +93,14 @@ class QuestionController extends AbstractController
                 ->setOriginalName($imageFile->getFilename())
                 ->setExtension($imageFile->guessExtension())
                 ->setSize($imageFile->getSize());
+
             $destination = $this->getParameter('kernel.project_dir').'/public/images/questions';
             $imageFile->move($destination, $fileName);
             $entityManager->persist($image);
 
             $question->setImages($image);
+        } else {
+            $question->setImages(null);
         }
 
         
@@ -111,7 +113,7 @@ class QuestionController extends AbstractController
             return new Response('Question created', Response::HTTP_CREATED, ['Content-Type' => 'application/json']);
         } catch (\Exception $e) {
             // Handle exception and log error
-            dd($e);
+            dd($e, $question);
             return new Response('Error creating question', Response::HTTP_INTERNAL_SERVER_ERROR, ['Content-Type' => 'application/json']);
         }
        

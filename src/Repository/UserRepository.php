@@ -66,10 +66,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function findBestUsers(int $limit = null): array
     {
         $qb = $this->createQueryBuilder('u')
-            ->select('u', 'COUNT(a.id) AS HIDDEN answers_count')
-            ->leftJoin('u.answers', 'a')
+            ->select('u', 'COUNT(q.id) AS HIDDEN questions_count')
+            ->leftJoin('u.questions', 'q')
             ->groupBy('u.id')
-            ->orderBy('answers_count', 'DESC')
+            ->orderBy('questions_count', 'DESC')
             ->setMaxResults($limit);
 
         $users = $qb->getQuery()->getResult();
@@ -80,7 +80,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
                 'id' => $user->getId(),
                 'username' => $user->getUsername(),
                 'avatar' => $user->getAvatar(),
-                'answers' => $user->getAnswers()->count(),
+                'questions_count' => $user->getQuestions()->count(),
             ];
         }
 

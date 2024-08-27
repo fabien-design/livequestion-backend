@@ -54,9 +54,6 @@ class Question
     #[Groups(["question.show"])]
     private ?DateTimeInterface $updatedAt = null;
 
-    #[Vich\UploadableField(mapping: 'question_image', fileNameProperty: 'images.name', originalName: 'images.original_name', size: 'images.size', mimeType: 'images.extension')]
-    private ?File $imageFile = null;
-
     /**
      * @var Collection<int, Answer>
      */
@@ -92,22 +89,6 @@ class Question
         return $this;
     }
 
-    public function getImageFile(): ?File
-    {
-        return $this->imageFile;
-    }
-
-    public function setImageFile(?File $imageFile = null): void
-    {
-        $this->imageFile = $imageFile;
-        if ($imageFile) {
-            $this->images = $this->getImages();
-            $this->images->setImageFile($imageFile);
-            $this->images->setUpdatedAt(new DateTimeImmutable());
-        }
-    }
-
-
     public function getAuthor(): ?User
     {
         return $this->author;
@@ -130,10 +111,10 @@ class Question
         return $this->images;
     }
 
-    public function setImages(Images $images): static
+    public function setImages(?Images $images): static
     {
         // set the owning side of the relation if necessary
-        if ($images->getQuestion() !== $this) {
+        if ($images != null && $images->getQuestion() !== $this) {
             $images->setQuestion($this);
         }
 
