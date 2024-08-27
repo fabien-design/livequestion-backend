@@ -14,7 +14,7 @@ class UserFixtures extends Fixture
         private readonly UserPasswordHasherInterface $passwordHasher,
     ) {
     }
-
+    public const REFERENCE_IDENTIFIER = 'user_';
     public const USERS = [
         [
             'username' => 'Paax',
@@ -27,6 +27,41 @@ class UserFixtures extends Fixture
             'username' => 'Test',
             'email' => 'test@example.com',
             'password' => 'test',
+            'role' => 'ROLE_USER',
+            'avatar' => null
+        ],
+        [
+            'username' => 'Jean',
+            'email' => 'jean@example.com',
+            'password' => 'jean',
+            'role' => 'ROLE_USER',
+            'avatar' => null
+        ],
+        [
+            'username' => 'Albator',
+            'email' => 'albator@example.com',
+            'password' => 'albator',
+            'role' => 'ROLE_USER',
+            'avatar' => null
+        ],
+        [
+            'username' => 'TomSawyer',
+            'email' => 'tomsawyer@example.com',
+            'password' => 'tomsawyer',
+            'role' => 'ROLE_USER',
+            'avatar' => null
+        ],
+        [
+            'username' => 'Pinocchio',
+            'email' => 'pinocchio@example.com',
+            'password' => 'pinocchio',
+            'role' => 'ROLE_USER',
+            'avatar' => null
+        ],
+        [
+            'username' => 'PeterPan',
+            'email' => 'peterpan@example.com',
+            'password' => 'peterpan',
             'role' => 'ROLE_USER',
             'avatar' => null
         ]
@@ -45,6 +80,7 @@ class UserFixtures extends Fixture
                 ->setAvatar($appUser['avatar']);
 
             $manager->persist($user);
+            $this->addReference(self::REFERENCE_IDENTIFIER. $appUser['username'], $user);
         }
         $manager->flush();
     }

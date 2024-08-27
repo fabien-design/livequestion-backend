@@ -56,6 +56,7 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
      * @var Collection<int, Answer>
      */
     #[ORM\OneToMany(targetEntity: Answer::class, mappedBy: 'author', orphanRemoval: true)]
+    #[Groups(["user.show", "user.index"])]
     private Collection $answers;
 
 

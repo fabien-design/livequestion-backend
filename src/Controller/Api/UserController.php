@@ -56,4 +56,14 @@ class UserController extends AbstractController
         $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user.show']);
         return new Response($jsonUser, Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
+
+    #[Route('/bests', name: 'app_api_user_best', methods: ['GET'], format: 'json')]
+    public function best(SerializerInterface $serializer,
+    #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^\d+$/'])] int $limit = 5): Response
+    {
+
+        $user = $this->userRepository->findBestUsers($limit);
+        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user.index']);
+        return new Response($jsonUser, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+    }
 }
