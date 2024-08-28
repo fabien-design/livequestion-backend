@@ -121,7 +121,7 @@ class UserController extends AbstractController
     public function show(string $username, SerializerInterface $serializer): Response
     {
         // Validation et nettoyage du paramètre username
-        if (empty($username) || !preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+        if (empty($username) || !preg_match('/^[a-zA-Z0-9_ ]+$/', $username)) {
             // Retourner une réponse 400 Bad Request pour les requêtes mal formées
             return new Response('Invalid username parameter', Response::HTTP_BAD_REQUEST);
         }
