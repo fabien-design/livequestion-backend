@@ -4,4 +4,7 @@ controllers:
         namespace: App\Controller
     type: attribute
 
-
+app_api_users_new:
+    path: /api/users/new
+    controller: App\Controller\Api\UserController::new
+    methods: [POST]

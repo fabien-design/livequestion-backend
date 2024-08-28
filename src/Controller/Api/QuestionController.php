@@ -37,14 +37,22 @@ class QuestionController extends AbstractController
         #[MapQueryParameter('orderBy', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(asc|desc)$/i'])] string $orderBy = 'DESC',
         #[MapQueryParameter('w', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(date|answers)$/'])] string $orderByField = 'date',
         #[MapQueryParameter('category', filter: \FILTER_VALIDATE_INT)] ?int $categoryId = null,
-        #[MapQueryParameter('author')] ?string $authorName = null
+        #[MapQueryParameter('author')] ?string $authorName = null,
+        #[MapQueryParameter('random', filter: \FILTER_VALIDATE_BOOLEAN)] bool $random = false
     ): Response {
         $orderByFieldMapping = [
             'date' => 'createdAt',
             'answers' => 'answersCount',
-        ];
+        ];  
 
         $orderByField = $orderByFieldMapping[$orderByField] ?? 'createdAt';
+
+        // Check if random is true, then override ordering parameters
+        if ($random) {
+            // Here we can set a specific random ordering or any logic related to random selection
+            $orderByField = 'RAND()'; // or any random-specific field, depending on your database
+            $orderBy = ''; // You might need to adjust this depending on your DBMS syntax
+        }
 
         $questions = $questionRepository->PaginateQuestions(
             page: $page,
@@ -59,6 +67,7 @@ class QuestionController extends AbstractController
 
         return new Response($jsonQuestions, Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
+
 
 
     #[Route('/most-answers-last-three-days', name: 'app_api_question_most_answers_last_three_days', methods: ['GET'], format: 'json')]

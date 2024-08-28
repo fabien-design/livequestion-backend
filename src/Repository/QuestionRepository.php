@@ -27,6 +27,9 @@ class QuestionRepository extends ServiceEntityRepository
         ?int $categoryId = null,
         ?string $authorName = null
     ): array {
+        if($sortBy !== "RAND()") {
+            $sortBy = $sortBy ? 'q.' . $sortBy : 'q.createdAt';
+        } 
         $qb = $this->createQueryBuilder('q')
             ->leftJoin('q.category', 'c')
             ->addSelect('c')
@@ -35,7 +38,7 @@ class QuestionRepository extends ServiceEntityRepository
             ->leftJoin('q.answers', 'a')
             ->addSelect('COUNT(a.id) AS HIDDEN answersCount')
             ->groupBy('q.id')
-            ->orderBy($sortBy ? 'q.' . $sortBy : 'q.createdAt', $orderBy);
+            ->orderBy($sortBy, $orderBy);
     
         // Application des filtres
         if ($categoryId) {

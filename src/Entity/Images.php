@@ -20,11 +20,11 @@ class Images
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["question.index", "question.show"])]
+    #[Groups(["question.index", "question.show", "user.index", "user.show"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["question.index", "question.show"])]
+    #[Groups(["question.index", "question.show", "user.index", "user.show"])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
@@ -49,6 +49,9 @@ class Images
 
     #[ORM\OneToOne(mappedBy: 'images', cascade: ['persist', 'remove'])]
     private ?Question $question = null;
+
+    #[ORM\OneToOne(mappedBy: 'avatar', cascade: ['persist', 'remove'])]
+    private ?User $user = null;
 
     public function getId(): ?int
     {
@@ -127,6 +130,18 @@ class Images
     {
         $this->question = $question;
 
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(User $user): static
+    {
+        $this->user = $user;
+        
         return $this;
     }
 

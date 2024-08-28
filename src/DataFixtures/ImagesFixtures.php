@@ -43,6 +43,36 @@ class ImagesFixtures extends Fixture
             'original_name' => 'deadpool_wolverine.png',
             'extension' => 'image/png',
         ],
+        [
+            'fake_id' => '7',
+            'original_name' => 'Meilleurs-joueurs-de-tennis-de-tous-les-temps-photo-joueurs-min.jpg',
+            'extension' => 'image/jpeg',
+        ],
+        [
+            'fake_id' => '8',
+            'original_name' => '1200x680_maxnewsworldfive245539.jpg',
+            'extension' => 'image/jpeg',
+        ],
+        [
+            'fake_id' => '9',
+            'original_name' => 'boxe_vs_mma.jpg',
+            'extension' => 'image/jpeg',
+        ],
+        [
+            'fake_id' => '10',
+            'original_name' => 'messi-et-cristiano-ronaldo.jpg',
+            'extension' => 'image/jpeg',
+        ],
+        [
+            'fake_id' => '11',
+            'original_name' => '60236223.jpeg',
+            'extension' => 'image/jpeg',
+        ],
+        [
+            'fake_id' => '12',
+            'original_name' => 'avatar-person.avif',
+            'extension' => 'image/avif',
+        ]
     ];
 
     public function load(ObjectManager $manager): void

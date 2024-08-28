@@ -43,9 +43,15 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     #[Groups(["question.show", "user.show"])]
     private ?string $email = null;
 
-    #[ORM\Column(length: 1024, nullable: true)]
+    // #[ORM\Column(length: 1024, nullable: true)]
+    // #[Groups(["question.index", "question.show", "user.show", "user.index"])]
+    // private ?string $avatar = null;
+
+    #[ORM\OneToOne(inversedBy: 'user', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(["question.index", "question.show", "user.show", "user.index"])]
-    private ?string $avatar = null;
+    private ?Images $avatar = null;
+
 
     /**
      * @var Collection<int, Question>
@@ -125,6 +131,9 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
+        if(!in_array('ROLE_USER', $roles)){
+            $this->roles[] = 'ROLE_USER';
+        }
 
         return $this;
     }
@@ -225,13 +234,21 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
         return $this;
     }
 
-    public function getAvatar(): ?string
+    public function getAvatar(): ?Images
     {
+        if ($this->avatar === null) {
+            $this->avatar = new Images();
+            $this->avatar->setUser($this);
+        }
         return $this->avatar;
     }
 
-    public function setAvatar(?string $avatar): static
+    public function setAvatar(?Images $avatar): static
     {
+        if ($avatar != null && $avatar->getQuestion() !== $this) {
+            $avatar->setUser($this);
+        }
+
         $this->avatar = $avatar;
 
         return $this;
