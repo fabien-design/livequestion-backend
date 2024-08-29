@@ -17,7 +17,7 @@ class Category
     #[Groups(["question.index", "question.show", "category.index"])]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     #[Groups(["question.index", "question.show", "category.index"])]
     private ?string $name = null;
 
