@@ -21,10 +21,12 @@ use Symfony\Component\Serializer\SerializerInterface;
 #[Route('/api/users')]
 class UserController extends AbstractController
 {
-    public function __construct(private SerializerInterface $serializer, 
-    private UserRepository $userRepository, 
-    private UserPasswordHasherInterface $passwordHasher,
-    private JWTTokenManagerInterface $jwtManager) {}
+    public function __construct(
+        private SerializerInterface $serializer,
+        private UserRepository $userRepository,
+        private UserPasswordHasherInterface $passwordHasher,
+        private JWTTokenManagerInterface $jwtManager
+    ) {}
 
     #[Route('/', name: 'app_api_user_index', methods: ['GET'], format: 'json')]
     public function index(
@@ -67,7 +69,7 @@ class UserController extends AbstractController
         }
         $password = htmlspecialchars(strip_tags(($data['password'])));
 
-        
+
         $user = new User();
         $user->setUsername($username)
             ->setEmail($email)
@@ -116,6 +118,115 @@ class UserController extends AbstractController
         $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user.index']);
         return new Response($jsonUser, Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }
+
+    #[Route('/{username}', name: 'app_api_user_update', methods: ['POST'], format: 'json')]
+    public function update(string $username, Request $request, 
+    EntityManagerInterface $entityManager, UserRepository $userRepository, 
+    JWTTokenManagerInterface $jwtManager, SerializerInterface $serializer): Response
+    {
+
+        // Récupération du token depuis les en-têtes
+        $authorizationHeader = $request->headers->get('Authorization');
+        if (!$authorizationHeader) {
+            return new Response(json_encode(['errors' => 'Token manquant']), Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Extraction du token Bearer
+        $token = str_replace('Bearer ', '', $authorizationHeader);
+        $tokenParts = explode(".", $token);
+        $tokenHeader = base64_decode($tokenParts[0]);
+        $tokenPayload = base64_decode($tokenParts[1]);
+        $jwtHeader = json_decode($tokenHeader, true);
+        $jwtPayload = json_decode($tokenPayload, true);
+
+        // Vérification que le token appartient à l'utilisateur correct
+        if ($jwtPayload['username'] !== $username) {
+            return new Response(json_encode(['errors' => 'Token ne correspond pas à l’utilisateur']), Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Validation du nom d'utilisateur
+        if (empty($username) || !preg_match('/^[a-zA-Z0-9_ ]+$/', $username)) {
+            return new Response(json_encode(['errors' => 'Nom d’utilisateur invalide']), Response::HTTP_BAD_REQUEST);
+        }
+
+        // Nettoyage et recherche de l'utilisateur
+        $username = htmlspecialchars(strip_tags($username));
+        $user = $userRepository->findOneBy(['username' => $username]);
+
+        if (!$user) {
+            return new Response(json_encode(['errors' => 'Utilisateur non trouvé']), Response::HTTP_NOT_FOUND);
+        }
+
+        // Traitement des données de la requête
+        $data = $request->request->all();
+
+        if (isset($data['username'])) {
+            $newUsername = htmlspecialchars(strip_tags($data['username']));
+            if (strlen($newUsername) < 4 || strlen($newUsername) > 50) {
+                return new Response(json_encode(['errors' => 'Le nom d’utilisateur doit contenir entre 4 et 50 caractères']), Response::HTTP_BAD_REQUEST);
+            }
+
+            $existingUser = $userRepository->findOneBy(['username' => $newUsername]);
+            if ($existingUser && $existingUser !== $user) {
+                return new Response(json_encode(['errors' => 'Nom d’utilisateur déjà pris']), Response::HTTP_BAD_REQUEST);
+            }
+            $user->setUsername($newUsername);
+        }
+        if (isset($data['email'])) {
+            if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                return new Response(json_encode(['errors' => 'Adresse e-mail invalide']), Response::HTTP_BAD_REQUEST);
+            }
+            $user->setEmail($data['email']);
+        }
+
+        if (isset($data['password'])) {
+            $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
+            $user->setPassword($hashedPassword);
+        }
+
+        // Traitement de l'avatar
+        if ($request->files->get('avatar')) {
+            $maxFileSize = intval($this->getParameter('app.max_file_size')); // 5MB en octets
+            $acceptedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/avif'];
+
+            $avatar = $request->files->get('avatar');
+            if (!in_array($avatar->getMimeType(), $acceptedImageTypes, true)) {
+                return new Response(json_encode(['errors' => "Formats d'images acceptés: .jpg, .jpeg, .png et .avif."]), Response::HTTP_BAD_REQUEST);
+            }
+            if ($avatar->getSize() > $maxFileSize) {
+                return new Response(json_encode(['errors' => "La taille maximale du fichier est de 5 Mo. Taille actuelle: {$avatar->getSize()}"]), Response::HTTP_BAD_REQUEST);
+            }
+
+            // Suppression de l'ancien avatar s'il existe
+            $oldAvatar = $user->getAvatar();
+            if ($oldAvatar) {
+                $entityManager->remove($oldAvatar);
+                $oldAvatarPath =  '/public/images/questions/' . $oldAvatar->getFilename();
+                if (file_exists($oldAvatarPath)) {
+                    unlink($oldAvatarPath);
+                }
+            }
+
+            $imageEntity = new Images();
+            $imageEntity->setImageFile($avatar);
+            $entityManager->persist($imageEntity);
+            $user->setAvatar($imageEntity);
+        }
+
+        $entityManager->persist($user);
+        try {
+            $entityManager->flush();
+            // Générer le nouveau token JWT
+            $token = $this->jwtManager->create($user);
+            $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user.show']);
+
+
+            return new JsonResponse(['token' => $token, 'userDetails' => $jsonUser], Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        } catch (\Exception $e) {
+            return new Response('Erreur lors de la mise à jour de l’utilisateur', Response::HTTP_INTERNAL_SERVER_ERROR, ['Content-Type' => 'application/json']);
+        }
+    }
+
 
     #[Route('/{username}', name: 'app_api_user_show', methods: ['GET'], format: 'json')]
     public function show(string $username, SerializerInterface $serializer): Response

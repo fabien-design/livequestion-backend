@@ -24,7 +24,7 @@ class QuestionRepository extends ServiceEntityRepository
         int $limit,
         string $orderBy = "DESC",
         string $sortBy = null,
-        ?int $categoryId = null,
+        ?string $category = null,
         ?string $authorName = null
     ): array {
         if($sortBy !== "RAND()") {
@@ -41,9 +41,14 @@ class QuestionRepository extends ServiceEntityRepository
             ->orderBy($sortBy, $orderBy);
     
         // Application des filtres
-        if ($categoryId) {
-            $qb->andWhere('c.id = :categoryId')
-                ->setParameter('categoryId', $categoryId);
+        if ($category) {
+            if (is_numeric($category)) {
+                $qb->andWhere('c.id = :categoryId')
+                    ->setParameter('categoryId', $category);
+            } else {
+                $qb->andWhere('c.name = :categoryName')
+                    ->setParameter('categoryName', $category);
+            }
         }
     
         if ($authorName) {
