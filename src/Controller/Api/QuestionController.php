@@ -37,6 +37,7 @@ class QuestionController extends AbstractController
         #[MapQueryParameter('limit', filter: \FILTER_VALIDATE_INT)] int $limit = 10,
         #[MapQueryParameter('orderBy', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(asc|desc)$/i'])] string $orderBy = 'DESC',
         #[MapQueryParameter('w', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^(date|answers)$/'])] string $orderByField = 'date',
+        #[MapQueryParameter('title')] ?string $title = null,
         #[MapQueryParameter('category', filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^[a-zA-Z0-9]+$/'])] ?string $category = null,
         #[MapQueryParameter('author')] ?string $authorName = null,
         #[MapQueryParameter('random', filter: \FILTER_VALIDATE_BOOLEAN)] bool $random = false
@@ -60,6 +61,7 @@ class QuestionController extends AbstractController
             limit: $limit,
             orderBy: strtoupper($orderBy),
             sortBy: $orderByField,
+            title: $title,
             category: $category,
             authorName: htmlspecialchars(strip_tags($authorName)),
         );

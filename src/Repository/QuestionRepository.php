@@ -24,6 +24,7 @@ class QuestionRepository extends ServiceEntityRepository
         int $limit,
         string $orderBy = "DESC",
         string $sortBy = null,
+        ?string $title = null,
         ?string $category = null,
         ?string $authorName = null
     ): array {
@@ -57,13 +58,19 @@ class QuestionRepository extends ServiceEntityRepository
             $qb->andWhere('q.author = :authorId')
                 ->setParameter('authorId', $authorId);
         }
+
+        if($title) {
+            $title = strtolower(str_replace('-', ' ', $title));
+            $qb->andWhere('q.title LIKE :title')
+                ->setParameter('title', '%'.$title.'%');
+        }
     
         $pagination = $this->paginator->paginate(
             $qb->getQuery(),
             $page,
             $limit
         );
-    
+
         // Transformation des résultats pour inclure le `answersCount` correctement
         $questions = [];
         foreach ($pagination as $question) {
