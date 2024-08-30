@@ -19,6 +19,7 @@ use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\Component\Validator\Constraints\Length;
 use Vich\UploaderBundle\Form\Type\VichImageType;
 
 #[Route('/api/questions')]
@@ -89,6 +90,12 @@ class QuestionController extends AbstractController
 
         $user = $this->getUser();
         $content = $request->request->get('content');
+        $content = htmlspecialchars(strip_tags($content));
+        if (strlen($content) < 20) {
+            return new Response('Question content is too short', Response::HTTP_BAD_REQUEST, ['Content-Type' => 'application/json']);
+        } else if (strlen($content) > 255) {
+            return new Response('Question content is too long', Response::HTTP_BAD_REQUEST, ['Content-Type' => 'application/json']);
+        }
         $categoryId = intval($request->request->get('categoryId'));
         $category = $categoryRepository->find($categoryId);
         $question = new Question();
