@@ -126,7 +126,8 @@ class UserController extends AbstractController
         EntityManagerInterface $entityManager,
         UserRepository $userRepository,
         JWTTokenManagerInterface $jwtManager,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        UserPasswordHasherInterface $passwordHasher
     ): Response {
 
         // Récupération du token depuis les en-têtes
@@ -180,7 +181,7 @@ class UserController extends AbstractController
         }
 
         if (isset($data['password'])) {
-            $hashedPassword = password_hash($data['password'], PASSWORD_BCRYPT);
+            $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
             $user->setPassword($hashedPassword);
         }
 
@@ -200,10 +201,16 @@ class UserController extends AbstractController
             // Suppression de l'ancien avatar s'il existe
             $oldAvatar = $user->getAvatar();
             if ($oldAvatar) {
-                $entityManager->remove($oldAvatar);
-                $oldAvatarPath =  '/public/images/questions/' . $oldAvatar->getFilename();
-                if (file_exists($oldAvatarPath)) {
-                    unlink($oldAvatarPath);
+                try {
+                    // $entityManager->remove($oldAvatar);
+                    $oldAvatarPath =  '/public/images/questions/' . $oldAvatar->getName();
+                    if (file_exists($oldAvatarPath)) {
+                        unlink($oldAvatarPath);
+                    }
+
+                } catch (\Exception $e) {
+                    // do nothing
+                    return new Response('Erreur lors de la suppression de l’ancien avatar', Response::HTTP_INTERNAL_SERVER_ERROR, ['Content-Type' => 'application/json']);
                 }
             }
 

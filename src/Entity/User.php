@@ -43,15 +43,10 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     #[Groups(["question.show", "user.show"])]
     private ?string $email = null;
 
-    // #[ORM\Column(length: 1024, nullable: true)]
-    // #[Groups(["question.index", "question.show", "user.show", "user.index"])]
-    // private ?string $avatar = null;
-
     #[ORM\OneToOne(inversedBy: 'user', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: true)]
     #[Groups(["question.index", "question.show", "user.show", "user.index"])]
     private ?Images $avatar = null;
-
 
     /**
      * @var Collection<int, Question>
@@ -67,16 +62,14 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     private Collection $answers;
 
     #[ORM\Column(type: 'datetime')]
-    #[Gedmo\Timestampable(on: 'update')]
-    #[Groups(["user.index" ,"user.show"])]
+    #[Gedmo\Timestampable(on: 'create')]
+    #[Groups(["user.index", "user.show"])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: 'datetime')]
     #[Gedmo\Timestampable(on: 'update')]
     #[Groups(["user.show"])]
     private ?\DateTimeInterface $updatedAt = null;
-
-
 
     public function __construct()
     {
@@ -97,50 +90,30 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function setUsername(string $username): static
     {
         $this->username = $username;
-
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->username;
     }
 
-    /**
-     * @see UserInterface
-     *
-     * @return list<string>
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
-
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
-        $this->roles = $roles;
-        if(!in_array('ROLE_USER', $roles)){
-            $this->roles[] = 'ROLE_USER';
+        if (!in_array('ROLE_USER', $roles)) {
+            $roles[] = 'ROLE_USER';
         }
-
+        $this->roles = $roles;
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): string
     {
         return $this->password;
@@ -149,17 +122,12 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function eraseCredentials(): void
     {
-        // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        // Effacez les données sensibles temporaires ici, si nécessaire
     }
 
     public function getEmail(): ?string
@@ -170,13 +138,23 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, Question>
-     */
+    public function getAvatar(): ?Images
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?Images $avatar): static
+    {
+        if ($avatar && $avatar->getUser() !== $this) {
+            $avatar->setUser($this);
+        }
+        $this->avatar = $avatar;
+        return $this;
+    }
+
     public function getQuestions(): Collection
     {
         return $this->questions;
@@ -188,11 +166,9 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
             $this->questions->add($question);
             $question->setAuthor($this);
         }
-
         return $this;
     }
 
-    #[Groups(["user.show", "user.index"])]
     public function getQuestionCount(): int
     {
         return count($this->questions);
@@ -201,18 +177,13 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function removeQuestion(Question $question): static
     {
         if ($this->questions->removeElement($question)) {
-            // set the owning side to null (unless already changed)
             if ($question->getAuthor() === $this) {
                 $question->setAuthor(null);
             }
         }
-
         return $this;
     }
 
-    /**
-     * @return Collection<int, Answer>
-     */
     public function getAnswers(): Collection
     {
         return $this->answers;
@@ -224,39 +195,16 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
             $this->answers->add($answer);
             $answer->setAuthor($this);
         }
-
         return $this;
     }
 
     public function removeAnswer(Answer $answer): static
     {
         if ($this->answers->removeElement($answer)) {
-            // set the owning side to null (unless already changed)
             if ($answer->getAuthor() === $this) {
                 $answer->setAuthor(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getAvatar(): ?Images
-    {
-        if ($this->avatar === null) {
-            $this->avatar = new Images();
-            $this->avatar->setUser($this);
-        }
-        return $this->avatar;
-    }
-
-    public function setAvatar(?Images $avatar): static
-    {
-        if ($avatar != null && $avatar->getQuestion() !== $this) {
-            $avatar->setUser($this);
-        }
-
-        $this->avatar = $avatar;
-
         return $this;
     }
 
@@ -268,7 +216,6 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function setCreatedAt(?\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
     }
 
@@ -280,7 +227,6 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
         return $this;
     }
 }
