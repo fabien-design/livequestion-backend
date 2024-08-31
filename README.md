@@ -60,7 +60,7 @@ bin/console doctrine:schema:update --force
 
 bin/console doctrine:fixtures:load -n
 ```
-4. Pour regénérer une passphrase pour jwt
+4. Pour générer les jwtToken (obligatoire pour l'acces au front)
 ```bash 
 docker compose exec symfony bin/console lexik:jwt:generate-keypair
 ```
@@ -91,7 +91,7 @@ php bin/console doctrine:schema:update --force
 php bin/console doctrine:fixtures:load -y
 ```
 
-3. Pour regénérer une passphrase pour jwt
+3. Pour générer les jwtToken (obligatoire pour l'acces au front)
 ```bash 
 docker compose exec symfony bin/console lexik:jwt:generate-keypair
 ```
