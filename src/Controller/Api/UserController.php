@@ -99,7 +99,7 @@ class UserController extends AbstractController
         try {
             $entityManager->flush();
             // Générer le token JWT
-            $token = $this->jwtManager->create($user);
+            $token = $this->jwtManager->createFromPayload($user, ['scope' => 'fileScope']);
 
             return new JsonResponse(['token' => $token], Response::HTTP_CREATED);
             // return new Response('User created', Response::HTTP_CREATED, ['Content-Type' => 'application/json']);
@@ -133,11 +133,7 @@ class UserController extends AbstractController
 
         // Extraction du token Bearer
         $token = str_replace('Bearer ', '', $authorizationHeader);
-        $tokenParts = explode(".", $token);
-        $tokenHeader = base64_decode($tokenParts[0]);
-        $tokenPayload = base64_decode($tokenParts[1]);
-        $jwtHeader = json_decode($tokenHeader, true);
-        $jwtPayload = json_decode($tokenPayload, true);
+        $jwtPayload = $jwtManager->parse($token);
 
         // Vérification que le token appartient à l'utilisateur correct
         if ($jwtPayload['username'] !== $username) {
@@ -217,7 +213,7 @@ class UserController extends AbstractController
         try {
             $entityManager->flush();
             // Générer le nouveau token JWT
-            $token = $this->jwtManager->create($user);
+            $token = $this->jwtManager->createFromPayload($user, ['scope' => 'fileScope']);
             $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user.show']);
 
 

@@ -59,7 +59,7 @@ class QuestionRepository extends ServiceEntityRepository
                 ->setParameter('authorId', $authorId);
         }
 
-        if($title) {
+        if($title && $title !== '') {
             $title = strtolower(str_replace('-', ' ', $title));
             $qb->andWhere('q.title LIKE :title')
                 ->setParameter('title', '%'.$title.'%');

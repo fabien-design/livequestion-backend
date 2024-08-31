@@ -19,9 +19,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class SecurityController extends AbstractController
 {
 
-    public function __construct(private UserProviderInterface $userProvider, private UserPasswordHasherInterface $passwordHasher, private JWTTokenManagerInterface $jwtManager)
-    {
-    }
+    public function __construct(private UserProviderInterface $userProvider, private UserPasswordHasherInterface $passwordHasher, private JWTTokenManagerInterface $jwtManager) {}
 
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
@@ -47,7 +45,7 @@ class SecurityController extends AbstractController
         }
 
         // Générer le token JWT
-        $token = $this->jwtManager->create($user);
+        $token = $this->jwtManager->createFromPayload($user, ['scope' => 'fileScope']); // add scope to identify the token for the event listener
 
         return new JsonResponse(['token' => $token], Response::HTTP_OK);
     }
