@@ -39,5 +39,6 @@ install:
 	$(EXEC) composer install && \
 	$(EXEC) bin/console d:d:c --if-not-exists && \
 	make dsu-f && \
-	$(EXEC) bin/console d:f:l -n
+	$(EXEC) bin/console d:f:l -n && \
+	docker compose exec symfony bin/console lexik:jwt:generate-keypair
 
