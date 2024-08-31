@@ -39,6 +39,5 @@ install:
 	$(EXEC) composer install && \
 	$(EXEC) bin/console d:d:c --if-not-exists && \
 	make dsu-f && \
-	$(EXEC) bin/console d:f:l -n && \
-	$(COMPOSE) exec node npm run dev 
+	$(EXEC) bin/console d:f:l -n
 
