@@ -120,10 +120,14 @@ class UserController extends AbstractController
     }
 
     #[Route('/{username}', name: 'app_api_user_update', methods: ['POST'], format: 'json')]
-    public function update(string $username, Request $request, 
-    EntityManagerInterface $entityManager, UserRepository $userRepository, 
-    JWTTokenManagerInterface $jwtManager, SerializerInterface $serializer): Response
-    {
+    public function update(
+        string $username,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserRepository $userRepository,
+        JWTTokenManagerInterface $jwtManager,
+        SerializerInterface $serializer
+    ): Response {
 
         // Récupération du token depuis les en-têtes
         $authorizationHeader = $request->headers->get('Authorization');
@@ -236,6 +240,7 @@ class UserController extends AbstractController
         // Nettoyer le paramètre username pour éviter les problèmes de sécurité
         $username = htmlspecialchars(strip_tags($username));
         $user = $this->userRepository->findOneBy(['username' => $username]);
+        // dd($user);
         $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user.show']);
         return new Response($jsonUser, Response::HTTP_OK, ['Content-Type' => 'application/json']);
     }

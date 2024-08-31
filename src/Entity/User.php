@@ -192,6 +192,12 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
         return $this;
     }
 
+    #[Groups(["user.show", "user.index"])]
+    public function getQuestionCount(): int
+    {
+        return count($this->questions);
+    }
+
     public function removeQuestion(Question $question): static
     {
         if ($this->questions->removeElement($question)) {
