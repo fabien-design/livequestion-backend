@@ -60,6 +60,10 @@ bin/console doctrine:schema:update --force
 
 bin/console doctrine:fixtures:load -n
 ```
+4. Pour regénérer une passphrase pour jwt
+```bash 
+docker compose exec symfony bin/console lexik:jwt:generate-keypair
+```
 
 ## 🐌 Installation sans Docker
 
@@ -85,6 +89,11 @@ OU
 php bin/console doctrine:database:create
 php bin/console doctrine:schema:update --force
 php bin/console doctrine:fixtures:load -y
+```
+
+3. Pour regénérer une passphrase pour jwt
+```bash 
+docker compose exec symfony bin/console lexik:jwt:generate-keypair
 ```
 
 Avec ces instructions, vous devriez être en mesure de démarrer rapidement le projet, que ce soit avec Docker ou sans.
