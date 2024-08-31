@@ -64,7 +64,6 @@ class Question
     public function __construct()
     {
         $this->answers = new ArrayCollection();
-        $this->images = $this->getImages();
     }
 
     public function __toString()

@@ -82,6 +82,76 @@ class QuestionFixtures extends Fixture implements DependentFixtureInterface
             'images' => '10',
             'category' => 'Sport',
         ],
+        [
+            'fake_id' => '11',
+            'title' => 'Quel est votre artiste musical préféré ?',
+            'author' => '21',
+            'images' => null,
+            'category' => 'Musique',
+        ],
+        [
+            'fake_id' => '12',
+            'title' => 'Quel est le plus grand exploit sportif de tous les temps ?',
+            'author' => '11',
+            'images' => null,
+            'category' => 'Sport',
+        ],
+        [
+            'fake_id' => '13',
+            'title' => 'Quels sont les plus grands défis pour l\'économie mondiale aujourd\'hui ?',
+            'author' => '12',
+            'images' => '13',
+            'category' => 'Business',
+        ],
+        [
+            'fake_id' => '14',
+            'title' => 'Comment la pandémie a-t-elle changé la politique mondiale ?',
+            'author' => '13',
+            'images' => '14',
+            'category' => 'Politique',
+        ],
+        [
+            'fake_id' => '15',
+            'title' => 'Quelle est la chanson qui a marqué votre adolescence ?',
+            'author' => '14',
+            'images' => null,
+            'category' => 'Musique',
+        ],
+        [
+            'fake_id' => '16',
+            'title' => 'Quel est le meilleur film de science-fiction de tous les temps ?',
+            'author' => '15',
+            'images' => null,
+            'category' => 'Films',
+        ],
+        [
+            'fake_id' => '17',
+            'title' => 'Pensez-vous que la santé mentale est suffisamment prise en compte dans notre société ?',
+            'author' => '16',
+            'images' => '15',
+            'category' => 'Santé',
+        ],
+        [
+            'fake_id' => '18',
+            'title' => 'Quel est le jeu vidéo qui vous a le plus marqué ?',
+            'author' => '17',
+            'images' => null,
+            'category' => 'Jeux Videos',
+        ],
+        [
+            'fake_id' => '19',
+            'title' => 'Selon vous, quelle est l\'invention qui a le plus changé le monde des affaires ?',
+            'author' => '18',
+            'images' => null,
+            'category' => 'Business',
+        ],
+        [
+            'fake_id' => '20',
+            'title' => 'Pensez-vous que les jeux vidéo peuvent être bénéfiques pour la santé mentale ?',
+            'author' => '20',
+            'images' => null,
+            'category' => 'Jeux Videos',
+        ]
 
     ];
 

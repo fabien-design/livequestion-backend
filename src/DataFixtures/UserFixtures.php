@@ -18,9 +18,9 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
     public const USERS = [
         [
             'fake_id' => '1',
-            'username' => 'Paax',
+            'username' => 'admin',
             'email' => 'admin@example.com',
-            'password' => 'livequestion',
+            'password' => 'admin',
             'role' => 'ROLE_ADMIN',
             'avatar' => '11'
         ],
@@ -432,17 +432,23 @@ class UserFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         foreach (self::USERS as $i => $appUser) {
-            $user = new User();
-            $user->setUsername($appUser['username'])
-                ->setEmail($appUser['email'])
-                ->setRoles([$appUser['role']])
-                ->setPassword($this->passwordHasher->hashPassword($user, $appUser['password']));
-            if($appUser['avatar'] !== null){
-                $user->setAvatar($this->getReference(ImagesFixtures::REFERENCE_IDENTIFIER .$appUser['avatar']));
-            }
+            try {
 
-            $manager->persist($user);
-            $this->addReference(self::REFERENCE_IDENTIFIER . $appUser['fake_id'], $user);
+                $user = new User();
+                $user->setUsername($appUser['username'])
+                    ->setEmail($appUser['email'])
+                    ->setRoles([$appUser['role']])
+                    ->setPassword($this->passwordHasher->hashPassword($user, $appUser['password']));
+                if($appUser['avatar'] !== null){
+                    $user->setAvatar($this->getReference(ImagesFixtures::REFERENCE_IDENTIFIER .$appUser['avatar']));
+                }
+    
+                $manager->persist($user);
+                $this->addReference(self::REFERENCE_IDENTIFIER . $appUser['fake_id'], $user);
+            } catch (\Exception $e) {
+                echo $e->getMessage();
+                dd("user error");
+            }
         }
         $manager->flush();
     }

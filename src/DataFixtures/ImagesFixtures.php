@@ -72,6 +72,21 @@ class ImagesFixtures extends Fixture
             'fake_id' => '12',
             'original_name' => 'avatar-person.avif',
             'extension' => 'image/avif',
+        ],
+        [
+            'fake_id' => '13',
+            'original_name' => 'img-economie-planet.webp',
+            'extension' => 'image/webp'
+        ],
+        [
+            'fake_id' => '14',
+            'original_name' => '202015.jpg',
+            'extension' => 'image/jpeg'
+        ],
+        [
+            'fake_id' => '15',
+            'original_name' => 'Sante-mentale-dans-le-monde-la-souffrance-est-enorme-alerte-l-OMS.jpg',
+            'extension' => 'image/jpeg'
         ]
     ];
 
