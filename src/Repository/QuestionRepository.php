@@ -47,7 +47,6 @@ class QuestionRepository extends ServiceEntityRepository
                 $qb->andWhere('c.id = :categoryId')
                     ->setParameter('categoryId', $category);
             } else {
-                dd($category);
                 $qb->andWhere('c.name LIKE :categoryName')
                     ->setParameter('categoryName', '%' . $category . '%');
             }
