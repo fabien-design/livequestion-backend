@@ -28,9 +28,9 @@ class QuestionRepository extends ServiceEntityRepository
         ?string $category = null,
         ?string $authorName = null
     ): array {
-        if($sortBy !== "RAND()") {
+        if ($sortBy !== "RAND()") {
             $sortBy = $sortBy ? 'q.' . $sortBy : 'q.createdAt';
-        } 
+        }
         $qb = $this->createQueryBuilder('q')
             ->leftJoin('q.category', 'c')
             ->addSelect('c')
@@ -40,18 +40,19 @@ class QuestionRepository extends ServiceEntityRepository
             ->addSelect('COUNT(a.id) AS HIDDEN answersCount')
             ->groupBy('q.id')
             ->orderBy($sortBy, $orderBy);
-    
+
         // Application des filtres
         if ($category) {
             if (is_numeric($category)) {
                 $qb->andWhere('c.id = :categoryId')
                     ->setParameter('categoryId', $category);
             } else {
-                $qb->andWhere('c.name = :categoryName')
-                    ->setParameter('categoryName', $category);
+                dd($category);
+                $qb->andWhere('c.name LIKE :categoryName')
+                    ->setParameter('categoryName', '%' . $category . '%');
             }
         }
-    
+
         if ($authorName) {
             $authorId = $this->userRepository->findOneByUsername($authorName)->getId();
 
@@ -59,12 +60,12 @@ class QuestionRepository extends ServiceEntityRepository
                 ->setParameter('authorId', $authorId);
         }
 
-        if($title && $title !== '') {
+        if ($title && $title !== '') {
             $title = strtolower(str_replace('-', ' ', $title));
             $qb->andWhere('q.title LIKE :title')
-                ->setParameter('title', '%'.$title.'%');
+                ->setParameter('title', '%' . $title . '%');
         }
-    
+
         $pagination = $this->paginator->paginate(
             $qb->getQuery(),
             $page,
@@ -94,9 +95,9 @@ class QuestionRepository extends ServiceEntityRepository
                 'answersCount' => $question->getAnswers()->count(),
             ];
         }
-    
+
         $pagination->setItems($questions);
-    
+
         return [
             'items' => $questions,
             'pagination' => [
